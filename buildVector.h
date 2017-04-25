@@ -1,1 +1,1 @@
-int* getMatrixOfIntegers(int length, int numberOfVectors);
+int* getMatrixOfIntegers(int length, int  numberOfVectors);

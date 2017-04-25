@@ -5,6 +5,7 @@
 
 
 
+
 #define TAREFAS 7 // Numero de tarefas no saco de trabalho para np = 8, processo 0 é o mestre
 #define ARRAY_LENGTH 10
 #define NUMBERS_OF_ARRAYS 2

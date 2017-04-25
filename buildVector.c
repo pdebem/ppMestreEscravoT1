@@ -4,6 +4,7 @@
 #include <time.h>
 
 
+
 int* getMatrixOfIntegers(int length, int numberOfVectors){
 	srand(time(NULL));   // should only be called once
 	
