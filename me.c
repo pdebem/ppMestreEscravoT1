@@ -1,9 +1,8 @@
 #include "mpi.h" 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "buildVector.h"
-
-
 
 
 #define TAREFAS 7 // Numero de tarefas no saco de trabalho para np = 8, processo 0 é o mestre
