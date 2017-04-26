@@ -1,8 +1,8 @@
 #define NUM_ARRAYS 7 // Numero de vetores 
 #define SIZE_ARRAY 10 //Numero de elementos em cada vetor
 #define MASTER 0 //Salva rank do mestre
-#define TAG_ARRAY 2 //Salva tag que envia array
-
+#define TAG_SEND_ARRAY 2 //Salva tag que envia array
+#define TAG_RECIVE_ARRAY 3
 #include <stdio.h>
 #include <string.h>
 #include "mpi.h"
@@ -22,8 +22,9 @@ main(int argc, char** argv)
    int source;   /* Identificador do proc.origem */
    int dest;     /* Identificador do proc. destino */
    int tag = 50; /* Tag para as mensagens */
-   // int sacoMaster[NUM_ARRAYS+7][SIZE_ARRAY+1]; // saco de trabalho mestre
-   int sacoSlave[SIZE_ARRAY+1]; // array para ser ordenado escravo
+
+   // int sacoMaster[NUM_ARRAYS+7][SIZE_ARRAY+2]; // saco de trabalho mestre
+   int sacoSlave[SIZE_ARRAY+2]; // array para ser ordenado escravo
     
    // char message[100]; /* Buffer para as mensagens */
    MPI_Status status; /* Status de retorno */
@@ -33,7 +34,8 @@ main(int argc, char** argv)
    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
    MPI_Comm_size(MPI_COMM_WORLD, &proc_n);
 
-   int sacoMaster[NUM_ARRAYS+proc_n][SIZE_ARRAY+1]; // saco de trabalho mestre
+   int relProc[NUM_ARRAYS];
+   int sacoMaster[NUM_ARRAYS+proc_n][SIZE_ARRAY+2]; // saco de trabalho mestre
    //my_rank = MPI_Comm_rank();  // pega pega o numero do processo atual (rank)
    //proc_n  = MPI_Comm_size();  // pega informação do numero de processos (quantidade total)
 
@@ -50,7 +52,7 @@ main(int argc, char** argv)
       int c;
       for(a=0; a<NUM_ARRAYS; a++)
       {
-         for(j=0; j<SIZE_ARRAY+1; j++)
+         for(j=0; j<SIZE_ARRAY+2; j++)
          {
             sacoMaster[a][j]=1 + ( rand() % 10000 );
          }
@@ -59,32 +61,35 @@ main(int argc, char** argv)
 
       // memset(&sacoMaster[NUM_ARRAYS+1][0], -1, sizeof(int)*SIZE_ARRAY*proc_n);
       for(b = NUM_ARRAYS+1; b < NUM_ARRAYS + proc_n; ++b){  
-         sacoMaster[b][SIZE_ARRAY+1] = -1;
-         printf("Saco[%d] valor [%d]\n", b, sacoMaster[b][SIZE_ARRAY+1]);
+         sacoMaster[b][SIZE_ARRAY+2] = -1;
+         printf("Saco[%d] valor [%d]\n", b, sacoMaster[b][SIZE_ARRAY+2]);
       }
       printf("VERORES CRIADOS MASTER\n");
 
 
       for(b=0; b<proc_n; b++)
       {
-         MPI_Send (&sacoMaster[b], SIZE_ARRAY+1, MPI_INT, 1, TAG_ARRAY, MPI_COMM_WORLD);
+         MPI_Send (&sacoMaster[b], SIZE_ARRAY+2, MPI_INT, b, TAG_SEND_ARRAY, MPI_COMM_WORLD);
          printf("VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);
       }
       for(b = proc_n; b<NUM_ARRAYS; b++)
       {
-         MPI_Recv (&sacoSlave, SIZE_ARRAY+1, MPI_INT , MPI_ANY_SOURCE, TAG_ARRAY, MPI_COMM_WORLD, &status);   
-         printf("VETOR[%d] recebido PROCESSO MASTER[%d]\n", sacoSlave[SIZE_ARRAY+1], my_rank);      
-         MPI_Send (&sacoMaster[b], SIZE_ARRAY+1, MPI_INT, 1, TAG_ARRAY, MPI_COMM_WORLD);
+         MPI_Recv (sacoSlave, SIZE_ARRAY+2, MPI_INT , MPI_ANY_SOURCE, TAG_RECIVE_ARRAY, MPI_COMM_WORLD, &status);   
+         printf("VETOR[%d] recebido PROCESSO MASTER[%d] DO PROCESSO SLAVE[%d]\n", sacoSlave[SIZE_ARRAY+1], my_rank, sacoSlave[SIZE_ARRAY+2]);      
+         MPI_Send (sacoMaster[b], SIZE_ARRAY+2, MPI_INT, sacoSlave[SIZE_ARRAY+2], TAG_SEND_ARRAY, MPI_COMM_WORLD);
          printf("VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);
          
       }
 
-         MPI_Recv (&sacoSlave, SIZE_ARRAY+1, MPI_INT , MPI_ANY_SOURCE, TAG_ARRAY, MPI_COMM_WORLD, &status);   
-         printf("VETOR[%d] recebido PROCESSO MASTER[%d]\n", sacoSlave[SIZE_ARRAY+1], my_rank);      
-
-      for(b = NUM_ARRAYS; b < proc_n + NUM_ARRAYS; ++b)
+      for(b=0; b<proc_n; b++)
       {
-         MPI_Send (&sacoMaster[b], SIZE_ARRAY+1, MPI_INT, 1, TAG_ARRAY, MPI_COMM_WORLD);
+         MPI_Recv (sacoSlave, SIZE_ARRAY+2, MPI_INT , MPI_ANY_SOURCE, TAG_SEND_ARRAY, MPI_COMM_WORLD, &status);   
+         printf("VETOR[%d] recebido PROCESSO MASTER[%d] DO PROCESSO SLAVE[%d]\n", sacoSlave[SIZE_ARRAY+1], my_rank, sacoSlave[SIZE_ARRAY+2]); 
+      } 
+
+      for(b = 1; b <= proc_n; ++b)
+      {
+         MPI_Send (&sacoMaster[b+NUM_ARRAYS], SIZE_ARRAY+2, MPI_INT, b, TAG_SEND_ARRAY, MPI_COMM_WORLD);
          printf("KILL VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);         
       }
 
@@ -104,15 +109,16 @@ main(int argc, char** argv)
    {
       printf("PROCESSO ESCRAVO[%d] INICIADO\n", my_rank);
 
-      MPI_Recv (&sacoSlave, SIZE_ARRAY+1, MPI_INT , MASTER, TAG_ARRAY, MPI_COMM_WORLD, &status);
+      MPI_Recv (sacoSlave, SIZE_ARRAY+2, MPI_INT , MASTER, TAG_SEND_ARRAY, MPI_COMM_WORLD, &status);
       printf("PROCESSO ESCRAVO[%d] RECEBEU O ARRAY\n", my_rank);
       if(sacoSlave[SIZE_ARRAY+1]==-1){
          printf("PROCESSO ESCRAVO[%d] KILLADO\n", my_rank);
          //TODO: terminar o processo escravo
+      } else {
+         sacoSlave[SIZE_ARRAY+2] = my_rank;
+         //qsort(sacoSlave, SIZE_ARRAY, sizeof(int), cmpfunc);
+         MPI_Send (&sacoSlave, SIZE_ARRAY+2, MPI_INT, 1, TAG_SEND_ARRAY, MPI_COMM_WORLD);
       }
-      qsort(sacoSlave, SIZE_ARRAY, sizeof(int), cmpfunc);
-      MPI_Send (sacoSlave, SIZE_ARRAY+1, MPI_INT, 1, TAG_ARRAY, MPI_COMM_WORLD);
-      
 
 
       /*for (source = 1; source < proc_n; source++)
