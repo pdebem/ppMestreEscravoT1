@@ -69,21 +69,21 @@ main(int argc, char** argv)
 
       for(b=0; b<proc_n; b++)
       {
-         MPI_Send (&sacoMaster[b], SIZE_ARRAY+2, MPI_INT, b, TAG_SEND_ARRAY, MPI_COMM_WORLD);
+         MPI_Send(&sacoMaster[b], SIZE_ARRAY+2, MPI_INT, b, TAG_SEND_ARRAY, MPI_COMM_WORLD);
          printf("VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);
       }
       for(b = proc_n; b<NUM_ARRAYS; b++)
       {
-         MPI_Recv (sacoSlave, SIZE_ARRAY+2, MPI_INT , MPI_ANY_SOURCE, TAG_RECIVE_ARRAY, MPI_COMM_WORLD, &status);   
+         MPI_Recv (&sacoSlave, SIZE_ARRAY+2, MPI_INT , MPI_ANY_SOURCE, TAG_RECIVE_ARRAY, MPI_COMM_WORLD, &status);   
          printf("VETOR[%d] recebido PROCESSO MASTER[%d] DO PROCESSO SLAVE[%d]\n", sacoSlave[SIZE_ARRAY+1], my_rank, sacoSlave[SIZE_ARRAY+2]);      
-         MPI_Send (sacoMaster[b], SIZE_ARRAY+2, MPI_INT, sacoSlave[SIZE_ARRAY+2], TAG_SEND_ARRAY, MPI_COMM_WORLD);
+         MPI_Send (&sacoMaster[b], SIZE_ARRAY+2, MPI_INT, sacoSlave[SIZE_ARRAY+2], TAG_SEND_ARRAY, MPI_COMM_WORLD);
          printf("VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);
          
       }
 
       for(b=0; b<proc_n; b++)
       {
-         MPI_Recv (sacoSlave, SIZE_ARRAY+2, MPI_INT , MPI_ANY_SOURCE, TAG_SEND_ARRAY, MPI_COMM_WORLD, &status);   
+         MPI_Recv (&sacoSlave, SIZE_ARRAY+2, MPI_INT , MPI_ANY_SOURCE, TAG_SEND_ARRAY, MPI_COMM_WORLD, &status);   
          printf("VETOR[%d] recebido PROCESSO MASTER[%d] DO PROCESSO SLAVE[%d]\n", sacoSlave[SIZE_ARRAY+1], my_rank, sacoSlave[SIZE_ARRAY+2]); 
       } 
 
@@ -109,7 +109,7 @@ main(int argc, char** argv)
    {
       printf("PROCESSO ESCRAVO[%d] INICIADO\n", my_rank);
 
-      MPI_Recv (sacoSlave, SIZE_ARRAY+2, MPI_INT , MASTER, TAG_SEND_ARRAY, MPI_COMM_WORLD, &status);
+      MPI_Recv(&sacoSlave, SIZE_ARRAY+2, MPI_INT , MASTER, TAG_SEND_ARRAY, MPI_COMM_WORLD, &status);
       printf("PROCESSO ESCRAVO[%d] RECEBEU O ARRAY\n", my_rank);
       if(sacoSlave[SIZE_ARRAY+1]==-1){
          printf("PROCESSO ESCRAVO[%d] KILLADO\n", my_rank);
@@ -117,7 +117,7 @@ main(int argc, char** argv)
       } else {
          sacoSlave[SIZE_ARRAY+2] = my_rank;
          //qsort(sacoSlave, SIZE_ARRAY, sizeof(int), cmpfunc);
-         MPI_Send (&sacoSlave, SIZE_ARRAY+2, MPI_INT, 1, TAG_SEND_ARRAY, MPI_COMM_WORLD);
+         MPI_Send (&sacoSlave, SIZE_ARRAY+2, MPI_INT, 0, TAG_SEND_ARRAY, MPI_COMM_WORLD);
       }
 
 
