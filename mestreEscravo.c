@@ -62,7 +62,6 @@ main(int argc, char** argv)
          printf("VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);
       }
 
-      
       /*for(int i=1; i<proc_n; i++)
       {
          MPI_Recv (sacoMaster[i], sizeof(int), MPI_INT,i, tag, MPI_COMM_WORLD, &status);  
@@ -78,11 +77,11 @@ main(int argc, char** argv)
    {
       printf("PROCESSO ESCRAVO[%d] INICIADO\n", my_rank);
       int c;
-      for(c=1; c<proc_n; c++)
-      {
+      // for(c=1; c<proc_n; c++)
+      // {
          MPI_Recv (&sacoSlave, SIZE_ARRAY, MPI_INT , MASTER, TAG_ARRAY, MPI_COMM_WORLD, &status);
          printf("PROCESSO ESCRAVO[%d] RECEBEU O ARRAY\n", my_rank);
-      }
+      // }
 
 
       /*for (source = 1; source < proc_n; source++)
