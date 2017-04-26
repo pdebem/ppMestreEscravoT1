@@ -59,7 +59,7 @@ main(int argc, char** argv)
       for(b=1; b<proc_n; b++)
       {
          MPI_Send (&sacoMaster[b], SIZE_ARRAY, MPI_INT, b, TAG_ARRAY, MPI_COMM_WORLD);
-         printf("         VETOR[%d] ENVIADO\n", b);
+         printf("VETOR[%d] ENVIADO PROCESSO MASTER[%d]\n", b, my_rank);
       }
 
       
