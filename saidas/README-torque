@@ -1,0 +1,21 @@
+##########################
+Torque Batch Script Usage:
+##########################
+
+pbsnodes
+#Show information about use status of each node.
+
+qstat -a
+#Shows queue / jobs status (running, waiting, completed or canceled).
+
+qstat -n
+#Shows allocated nodes/cores.
+
+qdel <job ID>
+#Cancel a job (the job ID can be viewed from qstat).
+
+qsub exemplos/Batchjob
+#Submit a job in batch script mode.
+
+"Batchjob" is the batch script file where job submission commands and parameters are specified. An example can be found in ~/exemplos/torque 
+directory.

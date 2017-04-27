@@ -1,5 +1,5 @@
 #!/bin/bash
-git add README.md mestreEscravo.c *.sh
+git add README.md mestreEscravo.c *.sh saidas/*
 	if [ $# -eq 0 ] 
 	then
 		git commit -m "Without comment!"
