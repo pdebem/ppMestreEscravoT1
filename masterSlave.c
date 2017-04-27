@@ -31,6 +31,8 @@ int main(int argc, char** argv)
    MPI_Comm_rank(MPI_COMM_WORLD, &process_id);
    MPI_Comm_size(MPI_COMM_WORLD, &num_processes);
 
+   int returns[num_processes];
+
    int (*current_array) = malloc ((ARRAY_SIZE+1) * sizeof *current_array);          /* Alocando espaco para o vetor */
    int (*master_bag)[ARRAY_SIZE+1] = malloc ((NUM_ARRAYS) * sizeof *master_bag);    /* Alocando espaco para o saco do mestre */
 
@@ -62,7 +64,8 @@ int main(int argc, char** argv)
       /* Recebe array ordenado e envia outro para o escravo ordenar */
       for (b = num_processes-1; b < NUM_ARRAYS; b++) 
       {
-         MPI_Recv (current_array, ARRAY_SIZE+1, MPI_INT , MPI_ANY_SOURCE, RECEIVE_ARRAY, MPI_COMM_WORLD, &status);   
+         MPI_Recv (current_array, ARRAY_SIZE+1, MPI_INT , MPI_ANY_SOURCE, RECEIVE_ARRAY, MPI_COMM_WORLD, &status);
+         ++returns[status.MPI_SOURCE];
          MPI_Send (&master_bag[b], ARRAY_SIZE+1, MPI_INT, status.MPI_SOURCE, SEND_ARRAY, MPI_COMM_WORLD);
          memcpy(master_bag[current_array[ARRAY_SIZE]], current_array, (ARRAY_SIZE + 1) * sizeof(int));
       }
@@ -71,6 +74,7 @@ int main(int argc, char** argv)
       for(b=0; b<num_processes-1; b++)
       {
          MPI_Recv (current_array, ARRAY_SIZE+1, MPI_INT , MPI_ANY_SOURCE, RECEIVE_ARRAY, MPI_COMM_WORLD, &status);   
+         ++returns[status.MPI_SOURCE];
          memcpy(master_bag[current_array[ARRAY_SIZE]], current_array, (ARRAY_SIZE + 1) * sizeof(int));
       } 
 
@@ -110,10 +114,14 @@ int main(int argc, char** argv)
       }
 
       t4 = MPI_Wtime();
-
       printf("********** PARALLEL - Slave [ID %d] execution time: %1.6f seconds **********\n", process_id, t4-t3);
    }
 
+   if(!process_id){
+      for(i = 1; i < num_processes; ++i){
+         printf("Processo[%d] realizou[%d] ordenamentos!\n",i, returns[i]);
+      }
+   }
    MPI_Finalize();
    free(master_bag);
    return 0;
